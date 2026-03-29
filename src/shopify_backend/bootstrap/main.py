@@ -22,7 +22,7 @@ class ShopifyApplication:
         return app
 
     def load_middlewares(self, app: FastAPI) -> None:
-
+        """Add middlewares to the app"""
         app.add_middleware(
             CORSMiddleware,
             allow_origins=self.settings.cors_allow_origins,
@@ -33,6 +33,7 @@ class ShopifyApplication:
         )
 
     def load_routes(self, app: FastAPI) -> None:
+        """Add routes to the app"""
         app.include_router(engagement.router, prefix=f"{API_PREFIX}/engagement")
 
     def app_context(self):
