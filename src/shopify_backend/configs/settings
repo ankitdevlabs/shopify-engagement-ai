@@ -1,0 +1,76 @@
+import typing
+from functools import lru_cache
+
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
+
+from tech_store.configs.constants import APP_DIR
+
+
+class CoreSettings(BaseSettings):
+    """Core runtime and CORS settings for the application."""
+
+    app_id: str = ""
+    app_name: str
+
+    # Runtime information
+    database_log_file: str
+    debug: bool
+    introspection: bool = True
+
+    # CORS settings
+    cors_allow_origins: list[str] = ["*"]
+    cors_allow_methods: tuple[str, ...] = (
+        "GET",
+        "POST",
+        "DELETE",
+        "PUT",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+    )
+    cors_allow_credentials: bool = False
+    cors_expose_headers: list[str] = []
+    cors_allow_headers: list[str] = ["*"]
+    cors_max_age: int = 600
+
+
+class PostgresSettings(BaseSettings):
+    """Postgres database related settings."""
+
+    pg_dsn: str = ""
+    pg_schema: str = "public"
+    pg_min_size: int = 5
+    pg_max_size: int = 10
+    pg_use_ssl: bool = True
+
+
+class AppSettings(CoreSettings, PostgresSettings):
+    """Tech Store application settings"""
+
+    model_config = SettingsConfigDict(yaml_file=f"{APP_DIR}/production.yaml")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """
+        Use YAML as the single source of truth for settings.
+        Expects YAML file to be located in src/{app_env}.yaml
+        """
+        return (YamlConfigSettingsSource(settings_cls),)
+
+
+# setting related function
+@lru_cache
+def get_application_settings() -> AppSettings:
+    return AppSettings()
