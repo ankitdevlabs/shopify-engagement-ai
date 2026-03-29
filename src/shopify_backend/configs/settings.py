@@ -12,7 +12,9 @@ from shopify_backend.configs.constants import APP_DIR
 
 class AppSettings(BaseSettings):
     openai_api_key: str = ""
-
+    hf_api_key: str
+    hf_base_uri: str
+    hf_model: str
     app_name: str = "shopify-backend"
     debug: bool = True
     introspection: bool = True
