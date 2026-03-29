@@ -1,4 +1,3 @@
-import typing
 from functools import lru_cache
 
 from pydantic_settings import (
@@ -8,21 +7,16 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
-from tech_store.configs.constants import APP_DIR
+from shopify_backend.configs.constants import APP_DIR
 
 
-class CoreSettings(BaseSettings):
-    """Core runtime and CORS settings for the application."""
+class AppSettings(BaseSettings):
+    openai_api_key: str = ""
 
-    app_id: str = ""
-    app_name: str
-
-    # Runtime information
-    database_log_file: str
-    debug: bool
+    app_name: str = "shopify-backend"
+    debug: bool = True
     introspection: bool = True
 
-    # CORS settings
     cors_allow_origins: list[str] = ["*"]
     cors_allow_methods: tuple[str, ...] = (
         "GET",
@@ -33,24 +27,9 @@ class CoreSettings(BaseSettings):
         "HEAD",
         "OPTIONS",
     )
-    cors_allow_credentials: bool = False
-    cors_expose_headers: list[str] = []
     cors_allow_headers: list[str] = ["*"]
+    cors_allow_credentials: bool = False
     cors_max_age: int = 600
-
-
-class PostgresSettings(BaseSettings):
-    """Postgres database related settings."""
-
-    pg_dsn: str = ""
-    pg_schema: str = "public"
-    pg_min_size: int = 5
-    pg_max_size: int = 10
-    pg_use_ssl: bool = True
-
-
-class AppSettings(CoreSettings, PostgresSettings):
-    """Tech Store application settings"""
 
     model_config = SettingsConfigDict(yaml_file=f"{APP_DIR}/production.yaml")
 

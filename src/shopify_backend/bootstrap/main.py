@@ -11,24 +11,14 @@ class ShopifyApplication:
 
     def initialize_app(self) -> FastAPI:
         """Initialize Fast Api APP"""
-        app = FastAPI(
-            debug=True,
-            middleware=self.load_default_middlewares(),
-            on_startup=[],
-            on_shutdown=[],
-        )
+        app = FastAPI(debug=self.settings.debug)
 
+        self.load_middlewares(app)
         self.load_routes(app)
 
         return app
 
-    def load_routes(self, app: FastAPI) -> None:
-        return []
-
-    def app_context(self):
-        pass
-
-    def load_default_middlewares(self) -> list[Middleware]:
+    def load_middlewares(self, app: FastAPI) -> None:
         middleware: list[Middleware] = []
 
         middleware.append(
@@ -42,7 +32,14 @@ class ShopifyApplication:
             )
         )
         return middleware
-    
+
+    def load_routes(self, app: FastAPI) -> None:
+        # app.include_router()
+        pass
+
+    def app_context(self):
+        pass
+
     def init_database(self):
         pass
 
