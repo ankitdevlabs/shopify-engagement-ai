@@ -128,7 +128,3 @@ poetry run cli serve --host 0.0.0.0 --port 9000
 * Optimize backend latency for real-time engagement
 
 ---
-
-## License
-
-MIT License
