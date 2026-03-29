@@ -104,49 +104,49 @@ class HFAdapter:
             ],
         }
 
-        # response = await self.make_api_request(
-        #     method="POST",
-        #     url=f"{self.settings.hf_base_uri}/chat/completions",
-        #     headers=headers,
-        #     json=payload,
-        #     timeout=50.0,
-        # )
+        response = await self.make_api_request(
+            method="POST",
+            url=f"{self.settings.hf_base_uri}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=50.0,
+        )
 
-        # if response.get("error"):
-        #     self.logger.error(f"Error from HF API: {response['error']}")
-        #     return {
-        #         "show_message": False,
-        #         "message": "",
-        #         "priority": "low",
-        #         "reason": f"HF API error: {response.get('error')}",
-        #     }
+        if response.get("error"):
+            self.logger.error(f"Error from HF API: {response['error']}")
+            return {
+                "show_message": False,
+                "message": "",
+                "priority": "low",
+                "reason": f"HF API error: {response.get('error')}",
+            }
 
-        # content_str = (
-        #     (response.get("choices", [{}]) or [{}])[0].get("message", {}) or {}
-        # ).get("content", "") or ""
+        content_str = (
+            (response.get("choices", [{}]) or [{}])[0].get("message", {}) or {}
+        ).get("content", "") or ""
 
-        # if not content_str:
-        #     self.logger.warning("HF API returned empty content")
-        #     return {
-        #         "show_message": False,
-        #         "message": "",
-        #         "priority": "low",
-        #         "reason": "HF API returned empty content",
-        #     }
+        if not content_str:
+            self.logger.warning("HF API returned empty content")
+            return {
+                "show_message": False,
+                "message": "",
+                "priority": "low",
+                "reason": "HF API returned empty content",
+            }
 
-        # try:
-        #     data = json.loads(content_str)
-        #     return {
-        #         "show_message": data.get("show_message", False),
-        #         "message": data.get("message", ""),
-        #         "priority": data.get("priority", "low"),
-        #         "reason": data.get("reason", ""),
-        #     }
-        # except json.JSONDecodeError:
-        #     self.logger.error(f"Failed to parse HF response as JSON: {content_str}")
-        #     return {
-        #         "show_message": False,
-        #         "message": "",
-        #         "priority": "low",
-        #         "reason": "Invalid JSON from HF API",
-        #     }
+        try:
+            data = json.loads(content_str)
+            return {
+                "show_message": data.get("show_message", False),
+                "message": data.get("message", ""),
+                "priority": data.get("priority", "low"),
+                "reason": data.get("reason", ""),
+            }
+        except json.JSONDecodeError:
+            self.logger.error(f"Failed to parse HF response as JSON: {content_str}")
+            return {
+                "show_message": False,
+                "message": "",
+                "priority": "low",
+                "reason": "Invalid JSON from HF API",
+            }

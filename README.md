@@ -128,3 +128,8 @@ poetry run cli serve --host 0.0.0.0 --port 9000
 * Optimize backend latency for real-time engagement
 
 ---
+
+## Screenshot 
+![alt text](<Screenshot from 2026-03-30 01-11-41.png>)
+
+![alt text](<Screenshot from 2026-03-30 01-10-15.png>)

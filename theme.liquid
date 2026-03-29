@@ -1,0 +1,180 @@
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+>
+<head>
+  {%- if settings.favicon != blank -%}
+    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width:32, height:32 }}">
+  {%- endif -%}
+
+  {% comment %} Load content & theme assets {% endcomment %}
+  {%- render 'meta-tags' -%}
+  {%- render 'stylesheets' -%}
+  {%- render 'fonts' -%}
+  {%- render 'scripts' -%}
+  {%- render 'theme-styles-variables' -%}
+  {%- render 'color-schemes' -%}
+
+  {% if request.design_mode %}
+    {%- render 'theme-editor' -%}
+  {% endif %}
+
+  {{ content_for_header }}
+</head>
+
+<body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+  {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+  <div id="header-group">
+    {% sections 'header-group' %}
+  </div>
+
+  <main
+    id="MainContent"
+    class="content-for-layout"
+    role="main"
+    data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+    data-product-transition="{{ settings.transition_to_main_product }}"
+    data-template="{{ template }}"
+  >
+    {{ content_for_layout }}
+  </main>
+
+  <footer>
+    {% sections 'footer-group' %}
+  </footer>
+
+  {% render 'search-modal' %}
+  {% if settings.quick_add or settings.mobile_quick_add %}
+    {% render 'quick-add-modal' %}
+  {% endif %}
+
+  <script>
+(function() {
+    const BACKEND_URL = "BACKEND_URL_PLACEHOLDER";
+    const SESSION_ID = 'session_' + Date.now() + '_' + Math.random();
+    let startTime = Date.now();
+
+    console.log('🎯 Engagement System Active');
+
+    function parseResponse(resText) {
+        // Try normal JSON parse first
+        try {
+            return JSON.parse(resText);
+        } catch (err) {
+            // Fallback: JS-style object literal (single quotes, unquoted keys)
+            try {
+                // Wrap in parentheses to eval as expression
+                return eval('(' + resText + ')');
+            } catch (e) {
+                console.log('❌ Failed to parse backend response:', e);
+                return null;
+            }
+        }
+    }
+
+    function trackEvent(eventType, extraData = {}) {
+        const data = {
+            session_id: SESSION_ID,
+            event_type: eventType,
+            current_page: getPageType(),
+            cart_items: getCartCount(),
+            time_on_site: Math.floor((Date.now() - startTime) / 1000),
+            ...extraData
+        };
+
+        fetch(BACKEND_URL + '/api/v1/engagement/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.text()) // get raw text
+        .then(text => {
+            const result = parseResponse(text);
+            if (!result) return;
+
+            console.log("💡 Engagement result:", result);
+
+            if (result.show_message && result.message) {
+                console.log('🔥 Showing popup with message:', result.message);
+                showPopup(result.message, 1000);
+            } else {
+                console.log('ℹ️ Engagement skipped:', result.reason || 'no message');
+            }
+        })
+        .catch(err => console.log('❌ Engagement error:', err));
+    }
+
+    function getCartCount() {
+        const selectors = [
+            '[data-cart-count]',
+            '.cart-count',
+            '.site-header__cart-count',
+            '.header__icon--cart .count'
+        ];
+        for (let selector of selectors) {
+            const elem = document.querySelector(selector);
+            if (elem) return parseInt(elem.innerText) || 0;
+        }
+        return 0;
+    }
+
+    function getPageType() {
+        const path = window.location.pathname;
+        if (path.includes('/products/')) return 'product';
+        if (path.includes('/cart')) return 'cart';
+        if (path.includes('/collections/')) return 'category';
+        return 'home';
+    }
+
+    function showPopup(message, delaySeconds) {
+        setTimeout(() => {
+            if (!document.body) return;
+
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                z-index: 2147483647;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            popup.innerHTML = `
+                <span>🎯</span>
+                <span>${message}</span>
+                <button style="background: none; border: none; color: white; font-size: 20px;">×</button>
+            `;
+            document.body.appendChild(popup);
+
+            popup.querySelector('button').addEventListener('click', () => popup.remove());
+            setTimeout(() => popup.remove(), 8000);
+        }, delaySeconds * 2);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        trackEvent('page_view');
+
+        document.addEventListener('click', e => {
+            trackEvent('click', {
+                element: e.target.tagName,
+                text: e.target.innerText ? e.target.innerText.substring(0,50) : ''
+            });
+        });
+
+        setInterval(() => trackEvent('time_tick'), 30000);
+    });
+})();
+</script>
+</body>
+</html>
