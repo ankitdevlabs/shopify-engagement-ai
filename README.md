@@ -71,7 +71,7 @@ hf_model: "your_model"
 ### 3. Run Server
 
 ```bash
-poetry run cli serve --host 0.0.0.0 --port 9000
+poetry run cli shopifyapi serve --host 0.0.0.0 --port 9000
 ```
 
 ---
@@ -95,7 +95,7 @@ poetry run cli serve --host 0.0.0.0 --port 9000
 #### Response
 
 ```json
-{
+{shopifyapi
   "show_message": true,
   "message": "Complete your purchase now!",
   "priority": "high",
